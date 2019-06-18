@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<style type="text/css">
+			#block{
+				margin-top: 55px;
+				padding: 20px;
+				background: #FFFFff;
+				color:#777777;
+				font-size: 15px;;
+				
+			}
+			#type{
+				
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav" style="padding-right: 15px;">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">账单详情</h1>
+		</header>
+		<div id="block">
+			
+		</div>
+		
+		<script src="js/mui.min.js"></script>
+		<script src="js/app.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			// 获取参数
+			function GetQueryString(name){
+			    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+			    var r = window.location.search.substr(1).match(reg);//search,查询？后面的参数，并匹配正则
+			    //注意：在解析中文时，浏览器已默认使用 encodeURI对中文进行编码，所在解析是使用decodeURI
+			    if(r!=null)return  decodeURI(r[2]); return null;
+			}
+			// 获取年月日
+			function timeFormat(timestamp){
+			  //timestamp是整数，否则要parseInt转换,不会出现少个0的情况
+				var time = new Date(timestamp);
+				var year = time.getFullYear();
+				var month = time.getMonth()+1;
+				var date = time.getDate();
+				return year+'年'+ month +'月' + date +'日';
+			}
+			//获取周几
+			function getWeek(date) {
+				var week;
+				var date = new Date(date)
+				if(date.getDay() == 0) week = "星期日"
+				if(date.getDay() == 1) week = "星期一"
+				if(date.getDay() == 2) week = "星期二"
+				if(date.getDay() == 3) week = "星期三"
+				if(date.getDay() == 4) week = "星期四"
+				if(date.getDay() == 5) week = "星期五"
+				if(date.getDay() == 6) week = "星期六"
+				return week;
+			}
+			var id = GetQueryString('id');
+			mui.plusReady(function () {
+				
+				app.getListDetail(id,function(result){
+						console.log(result);
+						var html = '';
+						if(result != 0){
+							html += '<div id="date">日期：' + timeFormat(result[0].date) + ' ' +getWeek(result[0].date);
+							html += '</div>';
+							html += '<div id="type">';
+							html += result[0].type + '：' + result[0].price + '元';
+							html += '</div>';
+							html += '<div id="note">';
+							html += '备注：'+ result[0].note;
+							html += '</div>';
+						} else {
+							var html = '<div>请退出重试</div>'	
+						}
+						var block = document.getElementById('block');
+						block.innerHTML = html;
+					});
+			})
+		</script>
+	</body>
+
+</html>

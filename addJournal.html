@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<style type="text/css">
+			*{
+				color:#8E8E8E;
+			}
+			.mui-btn-css{
+				width: 100%;
+				text-align: center;
+				margin-top:10px;
+				line-height: 30px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav" style="padding-right: 15px;">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">添加账单</h1>
+		</header>
+		<form class="mui-input-group"  style="margin-top: 60px;">
+			<div class="mui-input-row" >
+				<label>金额(元)</label>
+			    <input type="number" class="mui-input-clear" id="price" placeholder="请输入金额">
+			</div>
+		</form>
+		
+		<h5 class="mui-content-padded">选择类型</h5>
+		<ul class="mui-table-view mui-table-view-radio">
+			<li class="mui-table-view-cell mui-selected">
+				<a class="mui-navigate-right">
+					收入
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right">
+					支出
+				</a>
+			</li>
+		</ul>
+		<div id="pickerTime" style="margin-top: 20px;">
+			<button id='pickDateBtn' type="button" style="height: 45px;line-height: 20px;color: #8E8E8E;" class="mui-btn mui-btn-block">选择日期</button>
+		</div>
+		<div id="note">
+			<div class="mui-input-row" style="margin-top: 10px;">
+				<textarea  id="noteText" rows="5" placeholder="备注"></textarea>
+			</div>
+		</div>
+		<div id="addButton" >
+			<button type="button" class="mui-btn-css mui-btn mui-btn-primary">确认添加 </button>
+		</div>
+		
+		<div id="info"></div>
+		<script src="js/mui.min.js"></script>
+		<script src="js/app.js"></script>
+		<script type="text/javascript">
+			
+				mui.init({
+					statusBarBackground: '#f7f7f7'
+				});
+				mui.plusReady(function() {
+					// 时间格式化
+					function timestampToTime(timestamp) {
+						var timestamp = new Date(timestamp);
+						console.log(timestamp);
+						var Y = timestamp.getFullYear() + '-';
+						var M = timestamp.getMonth() + 1 +'-';
+						var D = timestamp.getDate() + ' ';
+						return Y+M+D;
+					}
+					// 获取时间
+					var pickerDateBtn = document.getElementById("pickDateBtn");
+					var date = '';
+					pickerDateBtn.addEventListener('tap', function() {
+						var dDate = new Date();
+						dDate.setFullYear(2019, 5, 16);
+						var minDate = new Date();
+						minDate.setFullYear(2010, 0, 1);
+						var maxDate = new Date();
+						plus.nativeUI.pickDate(function(e) {
+							var d = e.date;
+							pickerDateBtn.innerText =  '当前选择：' + timestampToTime(d);
+							// 将日期格式转为时间戳
+							date = Date.parse( timestampToTime(d));
+						}, function(e) {
+							// info.innerText = "您没有选择日期";
+						}, {
+							title: "请选择日期",
+							date: dDate,
+							minDate: minDate,
+							maxDate: maxDate
+						});
+					});
+					// 获取账单类型
+					var type = '收入';
+					
+					document.querySelector('.mui-table-view.mui-table-view-radio').addEventListener('selected',function(e){
+						type = e.detail.el.innerText;
+					});
+					// 获取金额和备注
+					var price = document.getElementById('price');
+					var note = document.getElementById('noteText');
+					
+					document.getElementById("addButton").addEventListener('tap',function(e){
+					
+						if(!price.value){
+							plus.nativeUI.toast('请输入金额');
+							return;
+						}
+						if(!date){
+							plus.nativeUI.toast('请选择日期');
+							return;
+						}
+						
+						var noteText = (!note.value) ? '' :note.value;
+						var mainPage = plus.webview.getWebviewById("main");
+						var addInfo = {
+							price:price.value,
+							type:type,
+							date:date,
+							note:noteText
+						}
+						app.addJournal(addInfo,function(err){
+							if(err){
+								plus.nativeUI.toast(err);
+								return;
+							}
+							plus.nativeUI.toast('添加成功');
+							console.log(123)
+							if(!mainPage){
+								mainPage = $.preload({
+									"id": 'main',
+									"url": 'main.html'
+								});
+							}
+							mui.fire(mainPage, 'getList', null);
+							mainPage.show("pop-in");
+						})
+						
+					});
+				});	
+		</script>
+	</body>
+
+</html>
